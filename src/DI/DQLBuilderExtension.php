@@ -24,7 +24,6 @@ class DQLBuilderExtension extends CompilerExtension {
 		$config = $this->validateConfig($this->defaults);
 
 		// Base macros
-		bdump($config['entities']);
 		$macros = $builder->addDefinition($this->prefix('baseMacros'))
 			->setFactory(BaseMacros::class, [$config['entities']]);
 
