@@ -72,6 +72,13 @@ class Query {
 			->setParameters($stmt->getParameters())->getResult();
 	}
 
+	public function getArrayResult() {
+		$stmt = $this->getSQLStatements();
+
+		return $this->em->createNativeQuery($stmt->getSql(), $stmt->getRsm())
+			->setParameters($stmt->getParameters())->getArrayResult();
+	}
+
 	public function getSingleScalarResult() {
 		$stmt = $this->getSQLStatements();
 
