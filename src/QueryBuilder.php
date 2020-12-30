@@ -7,6 +7,7 @@ use function GuzzleHttp\Psr7\str;
 use WebChemistry\DQLBuilder\Macros\BaseMacros;
 use WebChemistry\DQLBuilder\Parts\From;
 use WebChemistry\DQLBuilder\Parts\ICollection;
+use WebChemistry\DQLBuilder\Parts\JoinCollection;
 use WebChemistry\DQLBuilder\Parts\Select;
 use WebChemistry\DQLBuilder\Parts\StringCollection;
 use WebChemistry\DQLBuilder\Parts\Where;
@@ -24,6 +25,7 @@ class QueryBuilder {
 		'from' => null,
 		'order' => [],
 		'group' => [],
+		'join' => [],
 	];
 
 	/** @var array */
@@ -46,6 +48,7 @@ class QueryBuilder {
 			'from' => null,
 			'order' => new StringCollection(),
 			'group' => new StringCollection(),
+			'join' => new JoinCollection(),
 		];
 		$this->macros = $macros;
 	}
@@ -102,6 +105,7 @@ class QueryBuilder {
 		Helpers::searchForQuery($params, function ($query) {
 			$this->addParameters($query->getParameters());
 		});
+		
 		return Helpers::replaceParams($params, $expression);
 	}
 
@@ -120,6 +124,12 @@ class QueryBuilder {
 
 	public function from(string $expression, array $params = []) {
 		$this->parts['from'] = new From($this->parseParams($expression, $params));
+
+		return $this;
+	}
+
+	public function leftJoin(string $entity, string $column, string $alias) {
+		$this->parts['join']->add('LEFT', $entity, $column, $alias);
 
 		return $this;
 	}
@@ -169,7 +179,7 @@ class QueryBuilder {
 		return $this;
 	}
 
-	protected function buildPart(string $type, string $stmt, array $opts = []): string {
+	protected function buildPart(string $type, ?string $stmt, array $opts = []): string {
 		$parts = $this->parts[$type];
 		if (!$parts) {
 			return '';
@@ -177,7 +187,7 @@ class QueryBuilder {
 		if ($parts instanceof ICollection && !$parts->has()) {
 			return '';
 		}
-		return $stmt . ' ' . $this->parts[$type] . ' ';
+		return ($stmt !== null ? $stmt . ' ' : '') . $this->parts[$type] . ' ';
 	}
 
 	public function getQuery() {
@@ -194,6 +204,7 @@ class QueryBuilder {
 	protected function selfToString(): string {
 		$sql = $this->buildPart('select', 'SELECT');
 		$sql .= $this->buildPart('from', 'FROM');
+		$sql .= $this->buildPart('join', null);
 		$sql .= $this->buildPart('where', 'WHERE');
 		$sql .= $this->buildPart('group', 'GROUP BY');
 		$sql .= $this->buildPart('order', 'ORDER BY');

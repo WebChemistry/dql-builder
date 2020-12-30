@@ -35,6 +35,16 @@ class BaseMacros implements IMacro {
 		$this->functions['type'] = [$this, 'type'];
 	}
 
+	public function call(QueryStatement $stmt, ResultSetMapping $rsm) {
+		$callback = $this->functions[$stmt->getAndIncrementCurrentPath()];
+
+		if ($callback instanceof IMacro) {
+			return $callback->call($stmt, $rsm);
+		}
+
+		return $callback($stmt, $rsm);
+	}
+
 	private function extractLastName(string $entity): string {
 		$explode = explode('\\', $entity);
 		return $explode[count($explode) - 1];
@@ -83,7 +93,7 @@ class BaseMacros implements IMacro {
 		return $ret;
 	}
 
-	public function discriminator(QueryStatement $stmt, ResultSetMapping $rsm) {
+	protected function discriminator(QueryStatement $stmt, ResultSetMapping $rsm) {
 		$class = $stmt->getArguments()[0];
 
 		/** @var $metadata ClassMetadata */
@@ -92,7 +102,7 @@ class BaseMacros implements IMacro {
 		return $alias . '.' . $metadata->discriminatorColumn['name'];
 	}
 
-	public function type(QueryStatement $stmt, ResultSetMapping $rsm) {
+	protected function type(QueryStatement $stmt, ResultSetMapping $rsm) {
 		$class = $stmt->getArguments()[0];
 
 		/** @var $metadata ClassMetadata */
@@ -101,21 +111,11 @@ class BaseMacros implements IMacro {
 		return $metadata->discriminatorValue;
 	}
 
-	public function select(QueryStatement $stmt, ResultSetMapping $rsm) {
+	protected function select(QueryStatement $stmt, ResultSetMapping $rsm) {
 		$column = $stmt->getArguments()[0];
 		$rsm->addScalarResult($column, $column, $stmt->getCurrentPath());
 
 		return $column;
-	}
-
-	public function call(QueryStatement $stmt, ResultSetMapping $rsm) {
-		$callback = $this->functions[$stmt->getAndIncrementCurrentPath()];
-
-		if ($callback instanceof IMacro) {
-			return $callback->call($stmt, $rsm);
-		}
-
-		return $callback($stmt, $rsm);
 	}
 
 }

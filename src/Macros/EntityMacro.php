@@ -4,6 +4,7 @@ namespace WebChemistry\DQLBuilder\Macros;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\ORM\Query\ResultSetMapping;
 use Doctrine\ORM\Utility\PersisterHelper;
 use WebChemistry\DQLBuilder\MissingMetadataException;
@@ -88,6 +89,9 @@ class EntityMacro implements IMacro {
 			// associations
 			foreach ($metadata->associationMappings as $mapping) {
 				if (!$mapping['isOwningSide']) {
+					continue;
+				}
+				if ($mapping['type'] === ClassMetadataInfo::MANY_TO_MANY) {
 					continue;
 				}
 				if (isset($fields[$mapping['fieldName']])) {

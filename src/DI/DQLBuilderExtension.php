@@ -31,9 +31,9 @@ class DQLBuilderExtension extends CompilerExtension {
 			->setFactory(QueryFactory::class, [$macros])
 			->setType(IQueryFactory::class);
 
-		$builder->addDefinition($this->prefix('dataSourceFactory'))
+		/*$builder->addDefinition($this->prefix('dataSourceFactory'))
 			->setType(IDataSourceFactory::class)
-			->setFactory(DQLDataSourceFactory::class);
+			->setFactory(DQLDataSourceFactory::class);*/
 	}
 
 	public function beforeCompile() {
